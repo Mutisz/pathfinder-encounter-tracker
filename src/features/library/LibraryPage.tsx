@@ -30,7 +30,7 @@ export function LibraryPage() {
               key={k}
               type="button"
               onClick={() => setKind(k)}
-              className={`rounded px-3 py-1 text-sm font-medium ${kind === k ? 'bg-white shadow' : ''}`}
+              className={`cursor-pointer rounded px-3 py-1 text-sm font-medium ${kind === k ? 'bg-white shadow' : ''}`}
             >
               {k === 'npc' ? 'NPCs' : 'Players'}
             </button>

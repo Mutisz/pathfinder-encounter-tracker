@@ -90,7 +90,11 @@ export function RunningPanel({ enc }: { enc: Encounter }) {
                   return (
                     <li key={p.id} className="flex flex-wrap items-center gap-2 px-3 py-2 text-sm">
                       <KindBadge kind={p.kind} />
-                      <button type="button" className="font-medium hover:underline" onClick={() => setSelectedId(p.id)}>
+                      <button
+                        type="button"
+                        className="cursor-pointer font-medium hover:underline"
+                        onClick={() => setSelectedId(p.id)}
+                      >
                         {p.name}
                       </button>
                       <HpBadge p={p} />
@@ -229,7 +233,11 @@ function ParticipantRow({
         {p.initiativeChanged && <span className="text-xs text-stone-400">*</span>}
       </span>
       <KindBadge kind={p.kind} />
-      <button type="button" onClick={onSelect} className="min-w-32 grow text-left font-medium hover:underline">
+      <button
+        type="button"
+        onClick={onSelect}
+        className="min-w-32 grow cursor-pointer text-left font-medium hover:underline"
+      >
         {p.name}
         {isActive && <span className="ml-2 text-xs font-semibold uppercase text-accent">Active</span>}
         {p.lastZeroHpOutcome && p.currentHp === 0 && (

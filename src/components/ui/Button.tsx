@@ -20,7 +20,7 @@ export function Button({ variant = 'secondary', size = 'md', className = '', typ
   return (
     <button
       type={type}
-      className={`rounded font-medium transition-colors disabled:cursor-not-allowed ${sizing} ${styles[variant]} ${className}`}
+      className={`rounded font-medium transition-colors cursor-pointer disabled:cursor-not-allowed ${sizing} ${styles[variant]} ${className}`}
       {...rest}
     />
   );
