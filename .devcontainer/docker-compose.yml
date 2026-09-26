@@ -1,0 +1,17 @@
+services:
+  pathfinder-encounter-tracker:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    command: sleep infinity
+    volumes:
+      - type: bind
+        source: ..
+        target: /workspaces/pathfinder-encounter-tracker
+      - type: volume
+        source: pathfinder-encounter-tracker-claude
+        target: /home/node/.claude
+
+volumes:
+  pathfinder-encounter-tracker-claude:
+    name: pathfinder-encounter-tracker-claude

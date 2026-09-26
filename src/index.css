@@ -1,0 +1,19 @@
+@import 'tailwindcss';
+
+@theme {
+  --color-parchment: #f6f1e7;
+  --color-ink: #2b2118;
+  --color-accent: #8b1e1e;
+}
+
+html {
+  color-scheme: light;
+}
+
+body {
+  @apply bg-parchment text-ink min-h-screen antialiased;
+}
+
+dialog::backdrop {
+  background: rgb(0 0 0 / 0.45);
+}

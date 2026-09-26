@@ -1,0 +1,25 @@
+// For format details, see https://aka.ms/devcontainer.json. For config options, see the
+// README at: https://github.com/devcontainers/templates/tree/main/src/typescript-node
+{
+  "name": "pathfinder-encounter-tracker",
+  "dockerComposeFile": "docker-compose.yml",
+  "service": "pathfinder-encounter-tracker",
+  "workspaceFolder": "/workspaces/pathfinder-encounter-tracker",
+  "forwardPorts": [5173],
+  "customizations": {
+    "vscode": {
+      "settings": {
+        "editor.defaultFormatter": "esbenp.prettier-vscode"
+      },
+      "extensions": [
+        // Base
+        "ms-azuretools.vscode-containers",
+        "anthropic.claude-code",
+
+        // JS
+        "esbenp.prettier-vscode",
+        "howardzuo.vscode-npm-dependency"
+      ]
+    }
+  }
+}
