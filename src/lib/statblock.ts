@@ -1,8 +1,8 @@
 import type { InitiativeSkill } from '@/types/encounter';
-import type { Ability, Statblock, Strike } from '@/types/statblock';
+import type { Ability, Modifier, SpeedEntry, Statblock, Strike } from '@/types/statblock';
 
 export const blankStatblock = (): Statblock => ({
-  schemaVersion: 1,
+  schemaVersion: 2,
   name: '',
   level: 0,
   rarity: 'common',
@@ -13,13 +13,17 @@ export const blankStatblock = (): Statblock => ({
   skills: [],
   attributes: { str: 0, dex: 0, con: 0, int: 0, wis: 0, cha: 0 },
   items: [],
-  ac: { value: 10 },
-  saves: { fortitude: 0, reflex: 0, will: 0 },
-  hp: { max: 1 },
+  ac: { value: 10, modifiers: [] },
+  saves: {
+    fortitude: { value: 0, modifiers: [] },
+    reflex: { value: 0, modifiers: [] },
+    will: { value: 0, modifiers: [] },
+  },
+  hp: { max: 1, healingAbilities: [] },
   immunities: [],
   weaknesses: [],
   resistances: [],
-  speed: { base: 25, other: [] },
+  speed: { entries: [{ type: 'base', value: 25 }], notes: undefined },
   strikes: [],
   spellcasting: [],
   rituals: [],
@@ -27,6 +31,16 @@ export const blankStatblock = (): Statblock => ({
 });
 
 export const formatModifier = (n: number): string => (n >= 0 ? `+${n}` : `${n}`);
+
+/** Land Speed entry, or the first speed listed. */
+export const baseSpeed = (statblock: Statblock): SpeedEntry | undefined =>
+  statblock.speed.entries.find((e) => e.type === 'base') ?? statblock.speed.entries[0];
+
+/** Book-style conditional totals: "(26 with shield raised, 22 vs. ranged)" for AC, "(+14 vs. poison)" for saves. */
+export const modifierTotals = (base: number, modifiers: Modifier[], signed: boolean): string =>
+  modifiers
+    .map((m) => `${signed ? formatModifier(base + m.modifier) : base + m.modifier} ${m.condition}`.trim())
+    .join(', ');
 
 /** Multiple attack penalty: agile strikes use -4/-8, others -5/-10. */
 export const strikeMap = (strike: Strike): [number, number, number] => {

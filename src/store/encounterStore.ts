@@ -35,7 +35,7 @@ export const useEncounterStore = create<EncounterState>()(
           return { encounters };
         }),
     }),
-    { name: 'pet:encounters', version: 1 },
+    { name: 'pet:encounters:v2', version: 2 },
   ),
 );
 

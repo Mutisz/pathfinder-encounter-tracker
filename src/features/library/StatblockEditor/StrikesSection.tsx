@@ -2,14 +2,14 @@ import { Button } from '@/components/ui/Button';
 import { Label, ListInput, NumberInput, Select, TextInput } from '@/components/ui/Field';
 import { createId } from '@/lib/dice';
 import type { Strike } from '@/types/statblock';
-import { removeAt, replaceAt, SectionCard, type SectionProps } from './types';
+import { countSummary, removeAt, replaceAt, SectionCard, type SectionProps } from './types';
 
 export function StrikesSection({ sb, patch }: SectionProps) {
   const strikes = sb.strikes;
   const set = (i: number, s: Strike) => patch({ strikes: replaceAt(strikes, i, s) });
 
   return (
-    <SectionCard title="Strikes">
+    <SectionCard title="Strikes" summary={countSummary(strikes.length, 'strike')}>
       {strikes.map((s, i) => (
         <div key={s.id} className="space-y-2 rounded border border-stone-200 p-3">
           <div className="grid grid-cols-2 gap-2 md:grid-cols-[7rem_1fr_6rem_1fr_auto]">
@@ -67,6 +67,13 @@ export function StrikesSection({ sb, patch }: SectionProps) {
                 value={s.effects ?? ''}
                 placeholder="plus Grab"
                 onChange={(e) => set(i, { ...s, effects: e.target.value })}
+              />
+            </Label>
+            <Label label="Count (e.g. ammunition)">
+              <NumberInput
+                value={s.count ?? Number.NaN}
+                placeholder="—"
+                onChange={(count) => set(i, { ...s, count: count || undefined })}
               />
             </Label>
             {s.kind === 'ranged' && (

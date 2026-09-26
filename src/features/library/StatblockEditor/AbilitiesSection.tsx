@@ -3,7 +3,7 @@ import { Button } from '@/components/ui/Button';
 import { Label, ListInput, Select, TextArea, TextInput } from '@/components/ui/Field';
 import { createId } from '@/lib/dice';
 import { ACTION_COSTS, type Ability, type AbilityCategory, type ActionCost } from '@/types/statblock';
-import { removeAt, SectionCard, type SectionProps } from './types';
+import { countSummary, removeAt, SectionCard, type SectionProps } from './types';
 
 const parseCost = (v: string): ActionCost => (/^[123]$/.test(v) ? (Number(v) as 1 | 2 | 3) : (v as ActionCost));
 
@@ -20,7 +20,7 @@ export function AbilitiesSection({ sb, patch, category }: SectionProps & { categ
   const mine = all.filter((a) => a.category === category);
 
   return (
-    <SectionCard title={CATEGORY_TITLES[category]}>
+    <SectionCard title={CATEGORY_TITLES[category]} summary={countSummary(mine.length, 'ability')}>
       {mine.map((a) => (
         <div key={a.id} className="space-y-2 rounded border border-stone-200 p-3">
           <div className="grid grid-cols-2 gap-2 md:grid-cols-[1fr_10rem_1fr_auto]">

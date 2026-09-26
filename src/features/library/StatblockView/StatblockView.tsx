@@ -1,7 +1,14 @@
 import { ActionCostIcon } from '@/components/ui/ActionCostIcon';
 import { Traits } from '@/components/ui/Traits';
-import { abilitiesByCategory, formatModifier, strikeMap, traitsLine } from '@/lib/statblock';
-import { ATTRIBUTE_KEYS, type Ability, type SpellRank, type Statblock, type Strike } from '@/types/statblock';
+import { abilitiesByCategory, formatModifier, modifierTotals, strikeMap, traitsLine } from '@/lib/statblock';
+import {
+  ATTRIBUTE_KEYS,
+  type Ability,
+  type SaveValue,
+  type SpellRank,
+  type Statblock,
+  type Strike,
+} from '@/types/statblock';
 import type { ReactNode } from 'react';
 
 const Line = ({ label, children }: { label: string; children: ReactNode }) => (
@@ -46,8 +53,15 @@ const StrikeLine = ({ s }: { s: Strike }) => {
       <span className="text-stone-500">
         [{formatModifier(b)}/{formatModifier(c)}]
       </span>
-      {(s.traits.length > 0 || s.range || s.reload) && (
-        <> ({[...s.traits, s.range, s.reload ? `reload ${s.reload}` : undefined].filter(Boolean).join(', ')})</>
+      {(s.count || s.traits.length > 0 || s.range || s.reload) && (
+        <>
+          {' '}
+          (
+          {[s.count ? `×${s.count}` : undefined, ...s.traits, s.range, s.reload ? `reload ${s.reload}` : undefined]
+            .filter(Boolean)
+            .join(', ')}
+          )
+        </>
       )}
       , <span className="font-bold">Damage</span> {s.damage.map((d) => `${d.formula} ${d.type}`.trim()).join(' plus ')}
       {s.effects && ` ${s.effects}`}
@@ -57,8 +71,15 @@ const StrikeLine = ({ s }: { s: Strike }) => {
 
 const rankText = (r: SpellRank) =>
   `${r.rank === 0 ? 'Cantrips' : `${ordinal(r.rank)}`}${r.slots ? ` (${r.slots} slots)` : ''} ${r.spells
-    .map((sp) => `${sp.name}${sp.uses ? ` (${sp.uses})` : ''}${sp.notes ? ` [${sp.notes}]` : ''}`)
+    .map((sp) => `${sp.name}${sp.uses ? ` (${sp.uses})` : ''}`)
     .join(', ')}`;
+
+const saveText = (label: string, s: SaveValue) => (
+  <>
+    <span className="font-bold">{label}</span> {formatModifier(s.value)}
+    {s.modifiers.length > 0 && ` (${modifierTotals(s.value, s.modifiers, true)})`}
+  </>
+);
 
 const ordinal = (n: number) => `${n}${['th', 'st', 'nd', 'rd'][n % 10 > 3 || Math.floor(n / 10) === 1 ? 0 : n % 10]}`;
 
@@ -69,30 +90,46 @@ export function StatblockView({ statblock: sb }: { statblock: Statblock }) {
   return (
     <article className="rounded border border-stone-300 bg-white p-4 text-sm">
       <header className="flex items-baseline justify-between gap-2 border-b-2 border-ink pb-1">
-        <h3 className="text-lg font-bold uppercase">{sb.name || '(unnamed)'}</h3>
+        <h3 className="text-lg font-bold uppercase">
+          {sb.aonUrl ? (
+            <a
+              href={sb.aonUrl}
+              target="_blank"
+              rel="noreferrer"
+              className="hover:underline"
+              title="Open on Archives of Nethys"
+            >
+              {sb.name || '(unnamed)'} ↗
+            </a>
+          ) : (
+            sb.name || '(unnamed)'
+          )}
+        </h3>
         <span className="font-bold uppercase">Creature {sb.level}</span>
       </header>
       <Traits traits={traitsLine(sb)} className="my-1.5" />
-      {sb.source?.book && (
-        <p className="text-xs text-stone-500">
-          Source {sb.source.book}
-          {sb.source.page ? ` pg. ${sb.source.page}` : ''}
-        </p>
-      )}
       <Line label="Perception">
         {formatModifier(sb.perception.modifier)}
         {sb.perception.senses.length > 0 && `; ${sb.perception.senses.join(', ')}`}
-        {sb.perception.notes && `; ${sb.perception.notes}`}
       </Line>
-      {(sb.languages.length > 0 || sb.languageNotes) && (
+      {(sb.languages.length > 0 || sb.communication) && (
         <Line label="Languages">
           {sb.languages.join(', ')}
-          {sb.languageNotes && `; ${sb.languageNotes}`}
+          {sb.communication && `${sb.languages.length > 0 ? '; ' : ''}${sb.communication}`}
         </Line>
       )}
       {sb.skills.length > 0 && (
         <Line label="Skills">
-          {sb.skills.map((s) => `${s.name} ${formatModifier(s.modifier)}${s.notes ? ` (${s.notes})` : ''}`).join(', ')}
+          {sb.skills
+            .map(
+              (s) =>
+                `${s.name} ${formatModifier(s.modifier)}${
+                  s.actions.length > 0
+                    ? ` (${s.actions.map((a) => `${a.condition} ${formatModifier(s.modifier + a.modifier)}`).join(', ')})`
+                    : ''
+                }`,
+            )
+            .join(', ')}
         </Line>
       )}
       <Line label="">
@@ -107,14 +144,15 @@ export function StatblockView({ statblock: sb }: { statblock: Statblock }) {
       <Divider />
       <p className="leading-snug">
         <span className="font-bold">AC</span> {sb.ac.value}
-        {sb.ac.notes && ` (${sb.ac.notes})`}; <span className="font-bold">Fort</span>{' '}
-        {formatModifier(sb.saves.fortitude)}, <span className="font-bold">Ref</span> {formatModifier(sb.saves.reflex)},{' '}
-        <span className="font-bold">Will</span> {formatModifier(sb.saves.will)}
-        {sb.saves.notes && `; ${sb.saves.notes}`}
+        {sb.ac.modifiers.length > 0 && ` (${modifierTotals(sb.ac.value, sb.ac.modifiers, false)})`};{' '}
+        {saveText('Fort', sb.saves.fortitude)}, {saveText('Ref', sb.saves.reflex)}, {saveText('Will', sb.saves.will)}
       </p>
       <p className="leading-snug">
         <span className="font-bold">HP</span> {sb.hp.max}
-        {sb.hp.notes && ` (${sb.hp.notes})`}
+        {sb.hp.healingAbilities.length > 0 &&
+          ` (${sb.hp.healingAbilities
+            .map((h) => `${h.name}${h.value !== undefined ? ` ${h.value}` : ''}${h.notes ? ` (${h.notes})` : ''}`)
+            .join(', ')})`}
         {sb.immunities.length > 0 && (
           <>
             ; <span className="font-bold">Immunities</span> {sb.immunities.join(', ')}
@@ -137,8 +175,10 @@ export function StatblockView({ statblock: sb }: { statblock: Statblock }) {
       {section('reactive')}
       <Divider />
       <Line label="Speed">
-        {sb.speed.base} feet
-        {sb.speed.other.map((o) => `, ${o.type} ${o.value} feet`).join('')}
+        {[...sb.speed.entries]
+          .sort((a, b) => (a.type === 'base' ? -1 : b.type === 'base' ? 1 : 0))
+          .map((e) => (e.type === 'base' ? `${e.value} feet` : `${e.type} ${e.value} feet`))
+          .join(', ')}
         {sb.speed.notes && `; ${sb.speed.notes}`}
       </Line>
       {sb.strikes
@@ -163,7 +203,14 @@ export function StatblockView({ statblock: sb }: { statblock: Statblock }) {
             `; Constant ${sc.constant.map((r) => `(${ordinal(r.rank)}) ${r.spells.map((x) => x.name).join(', ')}`).join('; ')}`}
         </p>
       ))}
-      {sb.rituals.length > 0 && <Line label="Rituals">{sb.rituals.join(', ')}</Line>}
+      {sb.rituals.length > 0 && (
+        <Line label="Rituals">
+          {[...sb.rituals]
+            .sort((a, b) => b.rank - a.rank)
+            .map((r) => `${r.name} (${ordinal(r.rank)})`)
+            .join(', ')}
+        </Line>
+      )}
       {section('offensive')}
     </article>
   );

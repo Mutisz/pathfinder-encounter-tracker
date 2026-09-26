@@ -29,11 +29,41 @@ export interface Ability {
   description: string;
 }
 
+/** A conditional bonus/penalty: condition -> modifier, e.g. { condition: 'with shield raised', modifier: 2 }. */
+export interface Modifier {
+  condition: string;
+  modifier: number;
+}
+
 export interface Skill {
   name: string;
   modifier: number;
-  /** e.g. "+9 to Climb" */
+  /** Modifiers for specific actions or circumstances of this skill, e.g. Climb +2. */
+  actions: Modifier[];
+}
+
+export interface HealingAbility {
+  /** "regeneration", "fast healing", "negative healing" */
+  name: string;
+  value?: number;
   notes?: string;
+}
+
+export interface SpeedEntry {
+  /** 'base', 'fly', 'burrow', 'swim', 'climb' or custom */
+  type: string;
+  value: number;
+}
+export const SPEED_TYPES = ['base', 'fly', 'burrow', 'swim', 'climb'];
+
+export interface Ritual {
+  name: string;
+  rank: number;
+}
+
+export interface SaveValue {
+  value: number;
+  modifiers: Modifier[];
 }
 
 export type AttributeKey = 'str' | 'dex' | 'con' | 'int' | 'wis' | 'cha';
@@ -55,6 +85,8 @@ export interface Strike {
   damage: Damage[];
   /** "plus Grab", "plus 1d6 persistent fire" */
   effects?: string;
+  /** Number carried; usually ammunition for projectile weapons. */
+  count?: number;
   /** Ranged only: "range increment 50 feet" or "range 30 feet" */
   range?: string;
   reload?: string;
@@ -69,9 +101,8 @@ export const SPELLCASTING_KINDS: SpellcastingKind[] = ['prepared', 'spontaneous'
 
 export interface SpellEntry {
   name: string;
-  /** "×2", "at will", "3/day" */
+  /** Prepared/innate only: "×2", "at will", "3/day". Spontaneous and focus casts are defined by slots/points. */
   uses?: string;
-  notes?: string;
 }
 
 export interface SpellRank {
@@ -96,11 +127,6 @@ export interface Spellcasting {
   constant: SpellRank[];
 }
 
-export interface ValueNote {
-  value: number;
-  notes?: string;
-}
-
 export interface TypedValue {
   type: string;
   value: number;
@@ -108,28 +134,31 @@ export interface TypedValue {
 }
 
 export interface Statblock {
-  schemaVersion: 1;
+  schemaVersion: 2;
   name: string;
   level: number;
   rarity: Rarity;
   size: Size;
   traits: string[];
-  source?: { book: string; page?: number; aonId?: number };
-  perception: { modifier: number; senses: string[]; notes?: string };
+  /** Link to the Archives of Nethys entry, if any. */
+  aonUrl?: string;
+  perception: { modifier: number; senses: string[] };
   languages: string[];
-  languageNotes?: string;
+  /** Special communication abilities, e.g. "telepathy 100 feet". */
+  communication?: string;
   skills: Skill[];
   attributes: Attributes;
   items: string[];
-  ac: ValueNote;
-  saves: { fortitude: number; reflex: number; will: number; notes?: string };
-  hp: { max: number; notes?: string };
+  ac: { value: number; modifiers: Modifier[] };
+  saves: { fortitude: SaveValue; reflex: SaveValue; will: SaveValue };
+  hp: { max: number; healingAbilities: HealingAbility[] };
   immunities: string[];
   weaknesses: TypedValue[];
   resistances: TypedValue[];
-  speed: { base: number; other: { type: string; value: number }[]; notes?: string };
+  /** First entry with type 'base' is the land Speed. */
+  speed: { entries: SpeedEntry[]; notes?: string };
   strikes: Strike[];
   spellcasting: Spellcasting[];
-  rituals: string[];
+  rituals: Ritual[];
   abilities: Ability[];
 }

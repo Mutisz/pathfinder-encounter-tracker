@@ -72,7 +72,7 @@ export const useLibraryStore = create<LibraryState>()(
           };
         }),
     }),
-    { name: 'pet:library', version: 1 },
+    { name: 'pet:library:v2', version: 2 },
   ),
 );
 

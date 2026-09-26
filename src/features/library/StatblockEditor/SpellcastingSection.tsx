@@ -9,7 +9,7 @@ import {
   type SpellcastingKind,
   type Tradition,
 } from '@/types/statblock';
-import { removeAt, replaceAt, SectionCard, type SectionProps } from './types';
+import { countSummary, removeAt, replaceAt, SectionCard, type SectionProps } from './types';
 
 const rankLabel = (r: number) => (r === 0 ? 'Cantrips' : `Rank ${r}`);
 
@@ -17,11 +17,15 @@ function RankList({
   ranks,
   onChange,
   showSlots,
+  showUses,
   title,
 }: {
   ranks: SpellRank[];
   onChange: (r: SpellRank[]) => void;
+  /** Spontaneous casters: slots per rank. */
   showSlots: boolean;
+  /** Prepared/innate casters: per-spell uses ("×2", "at will"). */
+  showUses: boolean;
   title: string;
 }) {
   const setRank = (i: number, r: SpellRank) => onChange(replaceAt(ranks, i, r));
@@ -52,22 +56,21 @@ function RankList({
             </Button>
           </div>
           {r.spells.map((sp, j) => (
-            <div key={j} className="grid grid-cols-[1fr_6rem_1fr_auto] gap-2">
+            <div key={j} className={`grid gap-2 ${showUses ? 'grid-cols-[1fr_8rem_auto]' : 'grid-cols-[1fr_auto]'}`}>
               <TextInput
                 value={sp.name}
                 placeholder="heal"
                 onChange={(e) => setRank(i, { ...r, spells: replaceAt(r.spells, j, { ...sp, name: e.target.value }) })}
               />
-              <TextInput
-                value={sp.uses ?? ''}
-                placeholder="×2 / at will"
-                onChange={(e) => setRank(i, { ...r, spells: replaceAt(r.spells, j, { ...sp, uses: e.target.value }) })}
-              />
-              <TextInput
-                value={sp.notes ?? ''}
-                placeholder="notes"
-                onChange={(e) => setRank(i, { ...r, spells: replaceAt(r.spells, j, { ...sp, notes: e.target.value }) })}
-              />
+              {showUses && (
+                <TextInput
+                  value={sp.uses ?? ''}
+                  placeholder="×2 / at will"
+                  onChange={(e) =>
+                    setRank(i, { ...r, spells: replaceAt(r.spells, j, { ...sp, uses: e.target.value || undefined }) })
+                  }
+                />
+              )}
               <Button size="sm" variant="ghost" onClick={() => setRank(i, { ...r, spells: removeAt(r.spells, j) })}>
                 ✕
               </Button>
@@ -95,7 +98,7 @@ export function SpellcastingSection({ sb, patch }: SectionProps) {
   const set = (i: number, s: Spellcasting) => patch({ spellcasting: replaceAt(list, i, s) });
 
   return (
-    <SectionCard title="Spells">
+    <SectionCard title="Spells" summary={countSummary(list.length, 'spellcasting entry')}>
       {list.map((s, i) => (
         <div key={s.id} className="space-y-3 rounded border border-stone-200 p-3">
           <div className="grid grid-cols-2 gap-2 md:grid-cols-[1fr_8rem_8rem_5rem_5rem_5rem_auto]">
@@ -147,12 +150,14 @@ export function SpellcastingSection({ sb, patch }: SectionProps) {
             title="Spells by rank"
             ranks={s.ranks}
             showSlots={s.kind === 'spontaneous'}
+            showUses={s.kind === 'prepared' || s.kind === 'innate'}
             onChange={(ranks) => set(i, { ...s, ranks })}
           />
           <RankList
             title="Constant"
             ranks={s.constant}
             showSlots={false}
+            showUses={false}
             onChange={(constant) => set(i, { ...s, constant })}
           />
         </div>

@@ -6,8 +6,10 @@ A GM helper for running **Pathfinder 2E Remaster** encounters. Single-page React
 ## Features (MVP)
 
 - **Library** of reusable NPC and player statblocks, fully structured after the Archives of Nethys / Monster Core layout
-  (traits, perception & senses, skills, attributes, items, defenses with immunities/weaknesses/resistances, speeds,
-  strikes with computed multiple attack penalty, spellcasting by rank, rituals, abilities in the four printed sections).
+  (traits, optional AoN link, perception & senses, languages & communication, skills with per-action modifiers,
+  attributes, items, AC and saves with conditional modifiers, HP with healing abilities, immunities/weaknesses/resistances,
+  speeds by type, strikes with count and computed multiple attack penalty, spellcasting by rank, rituals by rank,
+  abilities in the four printed sections). Editor sections are collapsible; the live preview prints book-style totals.
 - **Encounter setup**: players are added automatically; NPCs are added from the library with a count and an optional
   _Batch initiative_ checkbox (copies added together share one roll). Initiative is rolled as d20 + Perception, or any
   skill listed in the statblock. Order: highest first, NPCs win ties against players, tied players can be swapped

@@ -16,7 +16,7 @@ describe('initiativeOptions', () => {
     const sb = {
       ...blankStatblock(),
       perception: { modifier: 8, senses: [] },
-      skills: [{ name: 'Stealth', modifier: 6 }],
+      skills: [{ name: 'Stealth', modifier: 6, actions: [] }],
     };
     expect(initiativeOptions(sb).map((o) => `${o.key}:${o.modifier}`)).toEqual(['perception:8', 'Stealth:6']);
   });

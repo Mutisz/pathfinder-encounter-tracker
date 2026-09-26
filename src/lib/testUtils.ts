@@ -13,9 +13,9 @@ export const entry = (
   statblock: {
     ...blankStatblock(),
     name,
-    hp: { max: opts.hp ?? 20 },
+    hp: { max: opts.hp ?? 20, healingAbilities: [] },
     perception: { modifier: opts.perception ?? 5, senses: [] },
-    skills: opts.skills ?? [],
+    skills: (opts.skills ?? []).map((sk) => ({ ...sk, actions: [] })),
   },
   currentHp: opts.currentHp ?? opts.hp ?? 20,
   createdAt: 0,
