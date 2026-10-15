@@ -3,7 +3,7 @@ import { create } from 'zustand';
 import { persist } from 'zustand/middleware';
 import { createId } from '@/lib/dice';
 import { blankStatblock } from '@/lib/statblock';
-import type { EntryKind, LibraryEntry } from '@/types/library';
+import type { EntryKind, ImportSource, LibraryEntry } from '@/types/library';
 import type { Statblock } from '@/types/statblock';
 
 interface LibraryState {
@@ -13,7 +13,16 @@ interface LibraryState {
   duplicateEntry: (id: string) => LibraryEntry | undefined;
   deleteEntry: (id: string) => void;
   setCurrentHp: (id: string, hp: number) => void;
+  /**
+   * Inserts an imported player, or replaces the statblock of `existingId` (keeping its id so encounter
+   * participants created later still find it through templateId).
+   */
+  importPlayer: (statblock: Statblock, source: ImportSource, existingId?: string) => LibraryEntry;
 }
+
+/** A new max HP resets current HP (level-up, rebuild); otherwise carried-over damage is kept, clamped. */
+const nextCurrentHp = (prev: LibraryEntry, statblock: Statblock): number =>
+  prev.statblock.hp.max !== statblock.hp.max ? statblock.hp.max : Math.min(prev.currentHp, statblock.hp.max);
 
 export const useLibraryStore = create<LibraryState>()(
   persist(
@@ -37,10 +46,11 @@ export const useLibraryStore = create<LibraryState>()(
         set((s) => {
           const prev = s.entries[id];
           if (!prev) return s;
-          const maxChanged = prev.statblock.hp.max !== statblock.hp.max;
-          const currentHp = maxChanged ? statblock.hp.max : Math.min(prev.currentHp, statblock.hp.max);
           return {
-            entries: { ...s.entries, [id]: { ...prev, statblock, currentHp, updatedAt: Date.now() } },
+            entries: {
+              ...s.entries,
+              [id]: { ...prev, statblock, currentHp: nextCurrentHp(prev, statblock), updatedAt: Date.now() },
+            },
           };
         }),
       duplicateEntry: (id) => {
@@ -71,6 +81,23 @@ export const useLibraryStore = create<LibraryState>()(
             entries: { ...s.entries, [id]: { ...prev, currentHp: Math.max(0, Math.min(prev.statblock.hp.max, hp)) } },
           };
         }),
+      importPlayer: (statblock, source, existingId) => {
+        const now = Date.now();
+        const prev = existingId ? get().entries[existingId] : undefined;
+        const entry: LibraryEntry = prev
+          ? { ...prev, statblock, currentHp: nextCurrentHp(prev, statblock), updatedAt: now, source }
+          : {
+              id: createId(),
+              kind: 'player',
+              statblock,
+              currentHp: statblock.hp.max,
+              createdAt: now,
+              updatedAt: now,
+              source,
+            };
+        set((s) => ({ entries: { ...s.entries, [entry.id]: entry } }));
+        return entry;
+      },
     }),
     { name: 'pet:library:v2', version: 2 },
   ),

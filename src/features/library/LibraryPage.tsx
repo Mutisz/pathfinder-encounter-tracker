@@ -4,6 +4,7 @@ import { Button } from '@/components/ui/Button';
 import { Dialog } from '@/components/ui/Dialog';
 import { useLibraryEntries, useLibraryStore } from '@/store/libraryStore';
 import type { EntryKind, LibraryEntry } from '@/types/library';
+import { ImportPathbuilderDialog } from './ImportPathbuilderDialog';
 
 export function LibraryPage() {
   const entries = useLibraryEntries();
@@ -13,6 +14,7 @@ export function LibraryPage() {
   const navigate = useNavigate();
   const [kind, setKind] = useState<EntryKind>('npc');
   const [toDelete, setToDelete] = useState<LibraryEntry | null>(null);
+  const [importOpen, setImportOpen] = useState(false);
 
   const shown = entries.filter((e) => e.kind === kind);
 
@@ -39,6 +41,7 @@ export function LibraryPage() {
         <Button variant="primary" onClick={onCreate}>
           New {kind === 'npc' ? 'NPC' : 'player'}
         </Button>
+        {kind === 'player' && <Button onClick={() => setImportOpen(true)}>Import from Pathbuilder</Button>}
       </div>
 
       {shown.length === 0 ? (
@@ -55,6 +58,7 @@ export function LibraryPage() {
                   Level {e.statblock.level} · HP {e.kind === 'player' ? `${e.currentHp}/` : ''}
                   {e.statblock.hp.max} · Perception {e.statblock.perception.modifier >= 0 ? '+' : ''}
                   {e.statblock.perception.modifier}
+                  {e.source?.kind === 'pathbuilder' ? ' · Pathbuilder' : ''}
                 </span>
               </Link>
               <Button size="sm" onClick={() => duplicateEntry(e.id)}>
@@ -67,6 +71,12 @@ export function LibraryPage() {
           ))}
         </ul>
       )}
+
+      <ImportPathbuilderDialog
+        open={importOpen}
+        onClose={() => setImportOpen(false)}
+        onImported={(id) => navigate(`/library/${id}`)}
+      />
 
       <Dialog
         open={toDelete !== null}

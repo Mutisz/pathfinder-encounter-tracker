@@ -4,6 +4,8 @@ services:
       context: .
       dockerfile: Dockerfile
     command: sleep infinity
+    ports:
+      - "5173:5173"
     volumes:
       - type: bind
         source: ..

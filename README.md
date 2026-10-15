@@ -20,6 +20,11 @@ A GM helper for running **Pathfinder 2E Remaster** encounters. Single-page React
 - **Reduced to 0 HP**: NPCs choose _Dead_ (removed) or _Dying_; players choose _Dying_ or _Heroic Recovery_. Non-dead
   outcomes move the participant to directly before the current turn, per the knocked-out rule.
 - Player HP carries over between encounters (stored on the player's library entry).
+- **Pathbuilder import**: Library → Players → _Import from Pathbuilder_ takes the export ID (fetched from
+  pathbuilder2e.com) or the pasted/uploaded "Export JSON" file, computes the totals (HP, Perception, saves, trained
+  skills and lores, AC, strikes, spell DCs) and lists feats and features by name. Re-importing the same character
+  offers to update the existing entry. Not in the export, so check after import: item bonuses to Perception and
+  skills, weapon traits, melee vs ranged, and rules text for feats.
 
 Rules references (remaster): Encounter Mode / initiative and ties, Delay (Player Core p. 416), Getting Knocked Out,
 Hero Points — all on https://2e.aonprd.com/.
@@ -47,4 +52,4 @@ Pushing to `main` runs `.github/workflows/deploy.yml`, which builds and publishe
 - Data dump of Monster Core / NPC Core entries, selectable as NPCs
 - NPC actions (strikes against a selected participant)
 - Conditions with start-of-turn reminders (persistent damage, dying, wounded)
-- Pathbuilder player import, data export
+- Data export
