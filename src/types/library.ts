@@ -4,8 +4,9 @@ export type EntryKind = 'npc' | 'player';
 
 /** Where an entry was imported from, so a re-import can update it in place. */
 export interface ImportSource {
-  kind: 'pathbuilder';
-  /** Pathbuilder export id when fetched by id; absent when pasted. */
+  /** 'pathbuilder' = Pathbuilder 2e export; 'json' = the tracker's own statblock JSON (docs/statblock-json.md). */
+  kind: 'pathbuilder' | 'json';
+  /** Pathbuilder export id when fetched by id; absent otherwise. */
   id?: string;
   importedAt: number;
 }

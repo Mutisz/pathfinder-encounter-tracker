@@ -86,20 +86,11 @@ describe('fighter 5 (Kholo, str 18 con 16 wis 16)', () => {
     expect(sb.spellcasting).toEqual([]);
   });
 
-  it('imports feats and features by name', () => {
-    const names = sb.abilities.map((a) => a.name);
-    expect(names).toContain('Sudden Charge');
-    expect(names).toContain('Assurance (Athletics)');
-    expect(names).not.toContain('Great Kholo');
-    expect(names).not.toContain('Not Selected');
-    expect(names).not.toContain('Low-Light Vision');
-    const reactive = sb.abilities.find((a) => a.name === 'Reactive Strike');
-    expect(reactive?.category).toBe('reactive');
-    expect(reactive?.actionCost).toBe('reaction');
-    const charge = sb.abilities.find((a) => a.name === 'Sudden Charge');
-    expect(charge?.traits).toEqual(['class feat']);
-    expect(charge?.description).toBe('Class Feat, level 1');
-    expect(warnings.some((w) => /by name only/.test(w))).toBe(true);
+  it('imports only reaction features, not the feat list', () => {
+    expect(sb.abilities.map((a) => a.name).sort()).toEqual(['Reactive Strike', 'Shield Block']);
+    expect(sb.abilities.every((a) => a.category === 'reactive' && a.actionCost === 'reaction')).toBe(true);
+    expect(sb.abilities.map((a) => a.name)).not.toContain('Sudden Charge');
+    expect(warnings.some((w) => /feats and features not imported/.test(w))).toBe(true);
   });
 });
 

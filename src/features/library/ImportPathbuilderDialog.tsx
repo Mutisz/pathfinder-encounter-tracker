@@ -17,7 +17,7 @@ const errorMessage = (e: unknown): string => (e instanceof Error ? e.message : S
 
 export function ImportPathbuilderDialog({ open, onClose, onImported }: Props) {
   const entries = useLibraryEntries();
-  const importPlayer = useLibraryStore((s) => s.importPlayer);
+  const importEntry = useLibraryStore((s) => s.importEntry);
   const [exportId, setExportId] = useState('');
   const [pasted, setPasted] = useState('');
   const [busy, setBusy] = useState(false);
@@ -71,7 +71,8 @@ export function ImportPathbuilderDialog({ open, onClose, onImported }: Props) {
 
   const save = (existingId?: string) => {
     if (!result) return;
-    const entry = importPlayer(
+    const entry = importEntry(
+      'player',
       result.statblock,
       { kind: 'pathbuilder', id: sourceId, importedAt: Date.now() },
       existingId,
@@ -174,8 +175,8 @@ export function ImportPathbuilderDialog({ open, onClose, onImported }: Props) {
             <dd>{sb.strikes.map((s) => `${s.name} ${formatModifier(s.attackBonus)}`).join(', ') || '—'}</dd>
             <dt className="text-stone-600">Spellcasting</dt>
             <dd>{sb.spellcasting.map((s) => `${s.name} DC ${s.dc}`).join(', ') || '—'}</dd>
-            <dt className="text-stone-600">Abilities</dt>
-            <dd>{sb.abilities.length} feats and features</dd>
+            <dt className="text-stone-600">Reactions</dt>
+            <dd>{sb.abilities.map((a) => a.name).join(', ') || '—'}</dd>
           </dl>
           {match && (
             <p className="text-sm">

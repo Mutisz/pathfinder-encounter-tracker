@@ -20,11 +20,15 @@ A GM helper for running **Pathfinder 2E Remaster** encounters. Single-page React
 - **Reduced to 0 HP**: NPCs choose _Dead_ (removed) or _Dying_; players choose _Dying_ or _Heroic Recovery_. Non-dead
   outcomes move the participant to directly before the current turn, per the knocked-out rule.
 - Player HP carries over between encounters (stored on the player's library entry).
+- **JSON import**: Library → _Import JSON_ takes one statblock or an array in the tracker's own format
+  ([docs/statblock-json.md](docs/statblock-json.md), schema in [docs/statblock.schema.json](docs/statblock.schema.json)),
+  so NPCs can be written or generated outside the app. Same-name entries are updated in place unless told otherwise.
 - **Pathbuilder import**: Library → Players → _Import from Pathbuilder_ takes the export ID (fetched from
   pathbuilder2e.com) or the pasted/uploaded "Export JSON" file, computes the totals (HP, Perception, saves, trained
-  skills and lores, AC, strikes, spell DCs) and lists feats and features by name. Re-importing the same character
-  offers to update the existing entry. Not in the export, so check after import: item bonuses to Perception and
-  skills, weapon traits, melee vs ranged, and rules text for feats.
+  skills and lores, AC, strikes, spells with DCs and slots) and adds reactions such as Reactive Strike and Shield
+  Block; other feats are not imported (the export has no rules text). Re-importing the same character offers to
+  update the existing entry. Check after import: item bonuses to Perception and skills, weapon traits, melee vs
+  ranged.
 
 Rules references (remaster): Encounter Mode / initiative and ties, Delay (Player Core p. 416), Getting Knocked Out,
 Hero Points — all on https://2e.aonprd.com/.
@@ -33,7 +37,7 @@ Hero Points — all on https://2e.aonprd.com/.
 
 ```bash
 npm install
-npm run dev      # http://localhost:5173/pathfinder-encounter-tracker/
+npm run dev      # http://localhost:5174/pathfinder-encounter-tracker/
 npm test         # vitest, pure rules logic in src/lib
 npm run build    # type-check + production build to dist/
 npm run format
@@ -41,6 +45,9 @@ npm run format
 
 Layout: `src/types` (data model), `src/lib` (pure rules logic + tests), `src/store` (zustand + localStorage),
 `src/features` (library and encounter screens), `src/components/ui` (small UI kit).
+
+The statblock JSON format is documented in [docs/statblock-json.md](docs/statblock-json.md), with a JSON Schema in
+[docs/statblock.schema.json](docs/statblock.schema.json) for generating or validating NPCs outside the app.
 
 ## Deployment
 

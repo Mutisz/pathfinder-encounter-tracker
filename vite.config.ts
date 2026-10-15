@@ -8,6 +8,8 @@ export default defineConfig({
   base: '/pathfinder-encounter-tracker/',
   server: {
     host: true,
+    port: 5174,
+    strictPort: true,
     watch: {
       usePolling: true,
     },

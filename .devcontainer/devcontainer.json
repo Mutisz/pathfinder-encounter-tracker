@@ -5,7 +5,7 @@
   "dockerComposeFile": "docker-compose.yml",
   "service": "pathfinder-encounter-tracker",
   "workspaceFolder": "/workspaces/pathfinder-encounter-tracker",
-  "forwardPorts": [5173],
+  "forwardPorts": [5174],
   "customizations": {
     "vscode": {
       "settings": {

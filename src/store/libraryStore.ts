@@ -14,10 +14,10 @@ interface LibraryState {
   deleteEntry: (id: string) => void;
   setCurrentHp: (id: string, hp: number) => void;
   /**
-   * Inserts an imported player, or replaces the statblock of `existingId` (keeping its id so encounter
+   * Inserts an imported entry, or replaces the statblock of `existingId` (keeping its id so encounter
    * participants created later still find it through templateId).
    */
-  importPlayer: (statblock: Statblock, source: ImportSource, existingId?: string) => LibraryEntry;
+  importEntry: (kind: EntryKind, statblock: Statblock, source: ImportSource, existingId?: string) => LibraryEntry;
 }
 
 /** A new max HP resets current HP (level-up, rebuild); otherwise carried-over damage is kept, clamped. */
@@ -81,14 +81,14 @@ export const useLibraryStore = create<LibraryState>()(
             entries: { ...s.entries, [id]: { ...prev, currentHp: Math.max(0, Math.min(prev.statblock.hp.max, hp)) } },
           };
         }),
-      importPlayer: (statblock, source, existingId) => {
+      importEntry: (kind, statblock, source, existingId) => {
         const now = Date.now();
         const prev = existingId ? get().entries[existingId] : undefined;
         const entry: LibraryEntry = prev
           ? { ...prev, statblock, currentHp: nextCurrentHp(prev, statblock), updatedAt: now, source }
           : {
               id: createId(),
-              kind: 'player',
+              kind,
               statblock,
               currentHp: statblock.hp.max,
               createdAt: now,

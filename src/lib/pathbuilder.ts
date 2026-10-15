@@ -197,7 +197,10 @@ const RANGED_NAME =
 const SENSES = ['Low-Light Vision', 'Darkvision', 'Greater Darkvision', 'Scent', 'Tremorsense', 'Echolocation'];
 const SENSE_LOOKUP = new Map(SENSES.map((s) => [s.toLowerCase(), s.toLowerCase()]));
 
-/** Features a GM wants in the Reactive section; everything else imports as passive. */
+/**
+ * The only feats/features imported, as reactions in the Reactive section. Other feats are names without
+ * rules text, so they are left out and counted in a warning.
+ */
 const REACTION_FEATURES = new Set(
   [
     'Reactive Strike',
@@ -469,36 +472,25 @@ const mapResistances = (list: unknown[], warnings: string[]): Statblock['resista
 };
 
 const mapAbilities = (build: PathbuilderBuild, specials: string[], warnings: string[]): Ability[] => {
-  const heritage = build.heritage?.toLowerCase();
+  const featNames = (build.feats ?? [])
+    .filter((f): f is [string, ...unknown[]] => Array.isArray(f) && typeof f[0] === 'string')
+    .map((f) => f[0]);
   const out: Ability[] = [];
   const seen = new Set<string>();
+  let skipped = 0;
 
-  const push = (name: string, traits: string[], description: string) => {
+  for (const name of [...featNames, ...specials]) {
     const key = name.toLowerCase();
-    if (seen.has(key) || key === heritage || SENSE_LOOKUP.has(key)) return;
+    if (seen.has(key)) continue;
     seen.add(key);
-    const reaction = REACTION_FEATURES.has(key);
-    out.push({
-      id: createId(),
-      category: reaction ? 'reactive' : 'automatic',
-      name,
-      actionCost: reaction ? 'reaction' : 'passive',
-      traits,
-      description,
-    });
-  };
-
-  for (const feat of build.feats ?? []) {
-    if (!Array.isArray(feat) || typeof feat[0] !== 'string' || feat[0] === 'Not Selected') continue;
-    const [name, extra, type, level] = feat;
-    if (typeof type !== 'string') continue;
-    const label = typeof extra === 'string' && extra.trim() !== '' ? `${name} (${extra})` : name;
-    push(label, [type.toLowerCase()], isNumber(level) ? `${type}, level ${level}` : type);
+    if (!REACTION_FEATURES.has(key)) {
+      skipped++;
+      continue;
+    }
+    out.push({ id: createId(), category: 'reactive', name, actionCost: 'reaction', traits: [], description: '' });
   }
-  for (const s of specials) push(s, ['feature'], '');
 
-  if (out.length > 0)
-    warnings.push(`${out.length} feats and features imported by name only; rules text is not in the export.`);
+  if (skipped > 0) warnings.push(`${skipped} feats and features not imported (the export has no rules text).`);
   return out;
 };
 

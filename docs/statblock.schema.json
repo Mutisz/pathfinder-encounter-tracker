@@ -1,0 +1,334 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "Pathfinder Encounter Tracker statblock",
+  "description": "One NPC or player statblock in the tracker's native format (PF2E Remaster, Archives of Nethys layout). An import file is a single statblock or an array of them. See docs/statblock-json.md.",
+  "oneOf": [
+    { "$ref": "#/$defs/statblock" },
+    { "type": "array", "minItems": 1, "items": { "$ref": "#/$defs/statblock" } }
+  ],
+  "$defs": {
+    "statblock": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "schemaVersion",
+        "name",
+        "level",
+        "rarity",
+        "size",
+        "traits",
+        "perception",
+        "languages",
+        "skills",
+        "attributes",
+        "items",
+        "ac",
+        "saves",
+        "hp",
+        "immunities",
+        "weaknesses",
+        "resistances",
+        "speed",
+        "strikes",
+        "spellcasting",
+        "rituals",
+        "abilities"
+      ],
+      "properties": {
+        "schemaVersion": { "const": 2 },
+        "name": { "type": "string", "minLength": 1 },
+        "level": { "type": "integer", "minimum": -1, "maximum": 30 },
+        "rarity": { "enum": ["common", "uncommon", "rare", "unique"] },
+        "size": { "enum": ["tiny", "small", "medium", "large", "huge", "gargantuan"] },
+        "traits": {
+          "type": "array",
+          "items": { "type": "string" },
+          "description": "Lowercase traits after the size, e.g. [\"human\", \"humanoid\"]. Do not repeat rarity or size here."
+        },
+        "aonUrl": {
+          "type": "string",
+          "format": "uri",
+          "description": "Link to the Archives of Nethys page, if the creature has one."
+        },
+        "perception": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": ["modifier", "senses"],
+          "properties": {
+            "modifier": { "type": "integer" },
+            "senses": {
+              "type": "array",
+              "items": { "type": "string" },
+              "description": "e.g. [\"darkvision\", \"scent (imprecise) 30 feet\"]"
+            }
+          }
+        },
+        "languages": { "type": "array", "items": { "type": "string" } },
+        "communication": { "type": "string", "description": "e.g. \"telepathy 100 feet\"" },
+        "skills": { "type": "array", "items": { "$ref": "#/$defs/skill" } },
+        "attributes": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": ["str", "dex", "con", "int", "wis", "cha"],
+          "description": "Attribute MODIFIERS (+4), not scores (18).",
+          "properties": {
+            "str": { "type": "integer" },
+            "dex": { "type": "integer" },
+            "con": { "type": "integer" },
+            "int": { "type": "integer" },
+            "wis": { "type": "integer" },
+            "cha": { "type": "integer" }
+          }
+        },
+        "items": {
+          "type": "array",
+          "items": { "type": "string" },
+          "description": "Carried gear as printed, e.g. [\"leather armor\", \"shortsword\", \"10 arrows\"]"
+        },
+        "ac": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": ["value", "modifiers"],
+          "properties": {
+            "value": { "type": "integer" },
+            "modifiers": { "type": "array", "items": { "$ref": "#/$defs/modifier" } }
+          }
+        },
+        "saves": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": ["fortitude", "reflex", "will"],
+          "properties": {
+            "fortitude": { "$ref": "#/$defs/save" },
+            "reflex": { "$ref": "#/$defs/save" },
+            "will": { "$ref": "#/$defs/save" }
+          }
+        },
+        "hp": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": ["max", "healingAbilities"],
+          "properties": {
+            "max": { "type": "integer", "minimum": 1 },
+            "healingAbilities": { "type": "array", "items": { "$ref": "#/$defs/healingAbility" } }
+          }
+        },
+        "immunities": { "type": "array", "items": { "type": "string" } },
+        "weaknesses": { "type": "array", "items": { "$ref": "#/$defs/typedValue" } },
+        "resistances": { "type": "array", "items": { "$ref": "#/$defs/typedValue" } },
+        "speed": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": ["entries"],
+          "properties": {
+            "entries": { "type": "array", "minItems": 1, "items": { "$ref": "#/$defs/speedEntry" } },
+            "notes": { "type": "string" }
+          }
+        },
+        "strikes": { "type": "array", "items": { "$ref": "#/$defs/strike" } },
+        "spellcasting": { "type": "array", "items": { "$ref": "#/$defs/spellcasting" } },
+        "rituals": { "type": "array", "items": { "$ref": "#/$defs/ritual" } },
+        "abilities": { "type": "array", "items": { "$ref": "#/$defs/ability" } }
+      }
+    },
+    "modifier": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["condition", "modifier"],
+      "description": "A conditional bonus or penalty: the printed \"(+2 with shield raised)\" becomes {condition: \"with shield raised\", modifier: 2}.",
+      "properties": {
+        "condition": { "type": "string", "minLength": 1 },
+        "modifier": { "type": "integer" }
+      }
+    },
+    "skill": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["name", "modifier", "actions"],
+      "properties": {
+        "name": {
+          "type": "string",
+          "minLength": 1,
+          "description": "Capitalised as printed: \"Athletics\", \"Warfare Lore\"."
+        },
+        "modifier": { "type": "integer" },
+        "actions": {
+          "type": "array",
+          "items": { "$ref": "#/$defs/modifier" },
+          "description": "Per-action modifiers, e.g. {condition: \"to Climb\", modifier: 2}."
+        }
+      }
+    },
+    "save": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["value", "modifiers"],
+      "properties": {
+        "value": { "type": "integer" },
+        "modifiers": { "type": "array", "items": { "$ref": "#/$defs/modifier" } }
+      }
+    },
+    "healingAbility": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["name"],
+      "properties": {
+        "name": { "type": "string", "description": "\"regeneration\", \"fast healing\" or \"negative healing\"" },
+        "value": { "type": "integer" },
+        "notes": { "type": "string", "description": "e.g. \"deactivated by acid or fire\"" }
+      }
+    },
+    "typedValue": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["type", "value"],
+      "properties": {
+        "type": {
+          "type": "string",
+          "minLength": 1,
+          "description": "damage type or source, lowercase: \"fire\", \"cold iron\", \"physical\""
+        },
+        "value": { "type": "integer", "minimum": 0 },
+        "notes": { "type": "string", "description": "e.g. \"except bludgeoning\"" }
+      }
+    },
+    "speedEntry": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["type", "value"],
+      "properties": {
+        "type": {
+          "type": "string",
+          "description": "\"base\" for the land Speed; \"fly\", \"burrow\", \"swim\", \"climb\" or a custom type"
+        },
+        "value": { "type": "integer", "minimum": 0 }
+      }
+    },
+    "damage": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["formula", "type"],
+      "properties": {
+        "formula": {
+          "type": "string",
+          "pattern": "^\\d+d\\d+([+-]\\d+)?$|^\\d+$",
+          "description": "Dice as printed: \"1d6+5\", \"2d8\", or a flat \"3\"."
+        },
+        "type": {
+          "type": "string",
+          "minLength": 1,
+          "description": "lowercase damage type: \"slashing\", \"fire\", \"persistent bleed\""
+        }
+      }
+    },
+    "strike": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["kind", "name", "attackBonus", "traits", "damage"],
+      "properties": {
+        "id": { "type": "string", "description": "Optional on import; generated when missing." },
+        "kind": { "enum": ["melee", "ranged"] },
+        "name": { "type": "string", "minLength": 1, "description": "lowercase as printed: \"shortsword\", \"jaws\"" },
+        "attackBonus": { "type": "integer" },
+        "traits": {
+          "type": "array",
+          "items": { "type": "string" },
+          "description": "lowercase weapon traits: \"agile\", \"finesse\", \"reach 10 feet\". \"agile\" changes the multiple attack penalty."
+        },
+        "damage": { "type": "array", "minItems": 1, "items": { "$ref": "#/$defs/damage" } },
+        "effects": {
+          "type": "string",
+          "description": "Text after the damage: \"plus Grab\", \"plus 1d6 persistent fire\""
+        },
+        "count": {
+          "type": "integer",
+          "minimum": 1,
+          "description": "Number carried, usually ammunition for ranged strikes."
+        },
+        "range": { "type": "string", "description": "Ranged only: \"range increment 60 feet\" or \"range 30 feet\"" },
+        "reload": { "type": "string", "description": "Ranged only: \"reload 1\"" },
+        "notes": { "type": "string" }
+      }
+    },
+    "spellEntry": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["name"],
+      "properties": {
+        "name": { "type": "string", "minLength": 1 },
+        "uses": {
+          "type": "string",
+          "description": "Prepared and innate only: \"×2\", \"at will\", \"3/day\". Spontaneous slots and focus points are on the rank/entry."
+        }
+      }
+    },
+    "spellRank": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["rank", "spells"],
+      "properties": {
+        "rank": { "type": "integer", "minimum": 0, "maximum": 10, "description": "0 = cantrips" },
+        "slots": { "type": "integer", "minimum": 0, "description": "Spontaneous casters: slots at this rank." },
+        "spells": { "type": "array", "items": { "$ref": "#/$defs/spellEntry" } }
+      }
+    },
+    "spellcasting": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["name", "tradition", "kind", "dc", "ranks", "constant"],
+      "properties": {
+        "id": { "type": "string", "description": "Optional on import; generated when missing." },
+        "name": {
+          "type": "string",
+          "minLength": 1,
+          "description": "As printed: \"Divine Prepared Spells\", \"Primal Innate Spells\", \"Occult Focus Spells\""
+        },
+        "tradition": { "enum": ["arcane", "divine", "occult", "primal"] },
+        "kind": { "enum": ["prepared", "spontaneous", "innate", "focus"] },
+        "dc": { "type": "integer" },
+        "attack": { "type": "integer", "description": "Spell attack modifier, when printed." },
+        "focusPoints": { "type": "integer", "minimum": 0, "description": "Focus entries only." },
+        "ranks": { "type": "array", "items": { "$ref": "#/$defs/spellRank" } },
+        "constant": {
+          "type": "array",
+          "items": { "$ref": "#/$defs/spellRank" },
+          "description": "Constant spells by rank; usually []."
+        }
+      }
+    },
+    "ritual": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["name", "rank"],
+      "properties": {
+        "name": { "type": "string", "minLength": 1 },
+        "rank": { "type": "integer", "minimum": 1, "maximum": 10 }
+      }
+    },
+    "ability": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["category", "name", "actionCost", "traits", "description"],
+      "properties": {
+        "id": { "type": "string", "description": "Optional on import; generated when missing." },
+        "category": {
+          "enum": ["interaction", "automatic", "reactive", "offensive"],
+          "description": "The printed section: interaction = top block (before AC), automatic = passive/aura, reactive = reactions and free actions with triggers, offensive = after strikes."
+        },
+        "name": { "type": "string", "minLength": 1 },
+        "actionCost": {
+          "enum": ["passive", "free", "reaction", 1, 2, 3, "1-2", "1-3", "2-3"],
+          "description": "\"passive\" = no action icon. Numbers are integers, not strings."
+        },
+        "traits": { "type": "array", "items": { "type": "string" } },
+        "frequency": { "type": "string", "description": "e.g. \"once per day\"" },
+        "trigger": { "type": "string" },
+        "requirements": { "type": "string" },
+        "description": {
+          "type": "string",
+          "description": "Full rules text, including Effect for reactions. May be empty for a passive the GM knows."
+        }
+      }
+    }
+  }
+}
